@@ -1,0 +1,44 @@
+.idea
+*.idea
+/node_modules
+/public/hot
+/public/storage
+/storage
+/public/public
+/public/companies
+/public/logo
+/storage/*.key
+/storage/fonts
+/resources/assets/sass/.sass-cache
+/vendor
+.env
+.env.backup
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+bootstrap/cache/config.php
+/public/resources/course
+
+.DS_Store
+/Frontend/node_modules
+/Frontend/dist
+
+# local env files
+/Frontend/.env.local
+/Frontend/.env.*.local
+
+# Log files
+/Frontend/npm-debug.log*
+/Frontend/yarn-debug.log*
+/Frontend/yarn-error.log*
+
+# Editor directories and files
+/Frontend/.idea
+/Frontend/.vscode
+/Frontend/*.suo
+/Frontend/*.ntvs*
+/Frontend/*.njsproj
+/Frontend/*.sln
+/Frontend/*.sw*

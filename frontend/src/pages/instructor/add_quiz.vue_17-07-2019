@@ -1,0 +1,626 @@
+<template>
+  <div class="">
+
+    <div
+      class="container-fluid page__container"
+      :class="GUI.SHOW_MODAL ? 'fit-height' : ''"
+    >
+      <h1 class="h2">Add a New Exam</h1>
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">Basic</h4>
+        </div>
+        <div class="card-body">
+          <form @submit.prevent="createQuiz">
+            <div class="form-group row">
+              <label
+                for="quiz_title"
+                class="col-sm-3 col-form-label form-label"
+              >Exam Title:</label>
+              <div class="col-sm-9">
+                <input
+                  id="quiz_title"
+                  type="text"
+                  class="form-control"
+                  placeholder="Exam title"
+                  v-model="quiz.title"
+                />
+
+              </div>
+            </div>
+            <div class="form-group row">
+              <label
+                for="quiz_title"
+                class="col-sm-3 col-form-label form-label"
+              >Exam Description:</label>
+              <div class="col-sm-9">
+                <textarea
+                  id="quiz_title"
+                  type="text"
+                  class="form-control"
+                  placeholder="Exam description"
+                  v-model="quiz.description"
+                >
+                </textarea>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label
+                for="course_title"
+                class="col-sm-3 col-form-label form-label"
+              >Course:</label>
+              <div class="col-sm-9 col-md-4">
+                <select
+                  id="course_title"
+                  v-model="quiz.course_id"
+                  class="custom-select form-control"
+                >
+                  <option
+                    :value="null"
+                    disabled
+                  >Select a course</option>
+                  <option
+                    v-for="course in courses"
+                    :key="course.id"
+                    :value="course.id"
+                  >{{course.title}}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <label
+                for="cmn-toggle"
+                class="col-sm-3 col-form-label form-label"
+              >Previous Quiz</label>
+              <div class="col-sm-9">
+                <div class="form-group">
+                  <div class="custom-control custom-checkbox-toggle">
+                    <input
+                      id="cmn-toggle-previous-quiz"
+                      type="checkbox"
+                      aria-checked="false"
+                      class="custom-control-input"
+                      role="switch"
+                      @click="GUI.SHOW_PREVIOUS_QUIZ_INPUT=!GUI.SHOW_PREVIOUS_QUIZ_INPUT"
+                    >
+                    <label
+                      class="custom-control-label"
+                      for="cmn-toggle-previous-quiz"
+                    ><span class="sr-only">Timeframe</span></label>
+                  </div>
+                </div>
+                <div
+                  class="col-md-4"
+                  v-show="GUI.SHOW_PREVIOUS_QUIZ_INPUT"
+                >
+                  <select
+                    id="course_title"
+                    class="custom-select form-control"
+                    v-model="quiz.previous_quiz_id"
+                  >
+                    <option
+                      :value="null"
+                      disabled
+                    >Select a previous quizz</option>
+                    <option
+                      v-for="quiz in quizzes"
+                      :key="quiz.id"
+                      :value="quiz.id"
+                    >{{quiz.title}}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <label
+                for="quiz_image"
+                class="col-sm-3 col-form-label form-label"
+              >Exam Image:</label>
+              <div class="col-sm-9 col-md-4">
+                <p>
+                  <img
+                    :src="quiz.quiz_image"
+                    alt=""
+                    width="150"
+                    class="rounded"
+                    v-if="quiz.quiz_image"
+                  >
+                  <img
+                    v-else
+                    :src="routes.server_api+ '/img/default.png'"
+                    alt=""
+                    width="150"
+                    class="rounded"
+                  >
+                </p>
+                <div class="custom-file">
+                  <input
+                    type="file"
+                    id="quiz_image"
+                    class="custom-file-input"
+                    @change="onImageInputChanged"
+                  >
+                  <label
+                    for="quiz_image"
+                    class="custom-file-label"
+                  >Choose file</label>
+                </div>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label
+                for="cmn-toggle"
+                class="col-sm-3 col-form-label form-label"
+              >Duration</label>
+              <div class="col-sm-9">
+                <div class="form-group">
+                  <div class="custom-control custom-checkbox-toggle">
+                    <input
+                      id="cmn-toggle"
+                      type="checkbox"
+                      aria-checked="false"
+                      class="custom-control-input"
+                      role="switch"
+                      @click="GUI.SHOW_DURATION=!GUI.SHOW_DURATION"
+                    >
+                    <label
+                      class="custom-control-label"
+                      for="cmn-toggle"
+                    ><span class="sr-only">Timeframe</span></label>
+                  </div>
+                </div>
+                <div
+                  class="form-inline"
+                  v-show="GUI.SHOW_DURATION"
+                >
+                  <div class="form-group mr-2">
+                    <input
+                      type="number"
+                      v-model="quiz.duration"
+                      class="form-control text-center"
+                      value="90"
+                      style="width:80px;"
+                    >
+                  </div>
+                  <div class="form-group">
+                    <span class="text-center">minutes</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label
+                for="cmn-toggle"
+                class="col-sm-3 col-form-label form-label"
+              >Retake after</label>
+              <div class="col-sm-9">
+                <div class="form-group">
+                  <div class="custom-control custom-checkbox-toggle">
+                    <input
+                      id="cmn-toggle-retake"
+                      type="checkbox"
+                      aria-checked="false"
+                      class="custom-control-input"
+                      role="switch"
+                      @click="GUI.SHOW_RETAKE=!GUI.SHOW_RETAKE"
+                    >
+                    <label
+                      class="custom-control-label"
+                      for="cmn-toggle-retake"
+                    ><span class="sr-only">Timeframe</span></label>
+                  </div>
+                </div>
+                <div
+                  class="form-inline"
+                  v-show="GUI.SHOW_RETAKE"
+                >
+                  <div>
+                    <div class="form-group mr-2">
+                      <input
+                        type="number"
+                        class="form-control text-center"
+                        value="90"
+                        v-model="quiz.retake_after"
+                        style="width:80px;"
+                      >
+                    </div>
+                    <div class="form-group">
+                      <span class="text-center">minutes</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="form-group mr-2">
+                      <input
+                        type="number"
+                        class="form-control text-center"
+                        value="90"
+                        v-model="quiz.number_of_possible_retake"
+                        style="width:80px;"
+                      >
+                    </div>
+                    <div class="form-group">
+                      <span class="text-center">retake time(s)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label
+                for="cmn-toggle"
+                class="col-sm-3 col-form-label form-label"
+              >Grade to pass</label>
+              <div class="col-sm-9">
+                <div class="form-group">
+                  <div class="custom-control custom-checkbox-toggle">
+                    <input
+                      id="cmn-toggle-grade"
+                      type="checkbox"
+                      aria-checked="false"
+                      class="custom-control-input"
+                      role="switch"
+                      @click="GUI.SHOW_GRADE_TO_PASS_INTPUT=!GUI.SHOW_GRADE_TO_PASS_INTPUT"
+                    >
+                    <label
+                      class="custom-control-label"
+                      for="cmn-toggle-grade"
+                    ><span class="sr-only">Timeframe</span></label>
+                  </div>
+                </div>
+                <div
+                  class="form-inline"
+                  v-show="GUI.SHOW_GRADE_TO_PASS_INTPUT"
+                >
+                  <div class="form-group mr-2">
+                    <input
+                      type="number"
+                      class="form-control text-center"
+                      value="90"
+                      v-model="quiz.grade_to_pass"
+                      style="width:80px;"
+                    >
+                  </div>
+                  <div class="form-group">
+                    <span class="text-center">points.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group row mb-0">
+              <div class="col-sm-9 offset-sm-3">
+                <button
+                  type="submit"
+                  class="btn btn-success"
+                >Save</button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="col-12">
+          <div
+            class="alert alert-dismissible bg-success text-white border-0 fade"
+            :class="added_success?'show':''"
+            v-if="added_success"
+            role="alert"
+          >
+            Added Exam <strong>successfully !</strong>
+          </div>
+          <div
+            class="alert alert-dismissible bg-danger text-white border-0 fade"
+            :class="added_error?'show':''"
+            v-if="added_error"
+            v-for="error in added_error_messages.errors"
+            role="alert"
+          >
+            <strong>Error ! </strong> {{error[0]}}
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">Questions</h4>
+        </div>
+        <div class="card-header">
+          <a
+            href="#"
+            class="btn btn-outline-secondary"
+            @click.prevent="GUI.SHOW_QUESTION_ERROR = true"
+          >Add a Question <i class="material-icons">add</i></a>
+        </div>
+        <div
+          class="nestable col-12"
+          id="nestable"
+        >
+          <div
+            class="alert alert-dismissible bg-danger text-white border-0 fade"
+            :class="GUI.SHOW_QUESTION_ERROR?'show':''"
+            role="alert"
+          >
+            <strong>Warning ! </strong> Please save Exam before add question
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- modal-->
+    <div
+      class="modal fade"
+      id="addQuestion"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-primary">
+            <h4 class="modal-title text-white">Add a Question</h4>
+            <button
+              type="button"
+              class="close text-white"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form action="#">
+              <div class="form-group row">
+                <label
+                  for="qtitle"
+                  class="col-form-label form-label col-md-3"
+                >Title:</label>
+                <div class="col-md-9">
+                  <input
+                    id="qtitle"
+                    type="text"
+                    class="form-control"
+                    value="Database Access"
+                  >
+                </div>
+              </div>
+              <div class="form-group row">
+                <label
+                  for="type"
+                  class="col-form-label form-label col-md-3"
+                >Type:</label>
+                <div class="col-md-4">
+                  <select
+                    id="type"
+                    class="custom-control custom-select form-control"
+                  >
+                    <option value="1">Input</option>
+                    <option value="2">Textarea</option>
+                    <option value="3">Checkbox</option>
+                    <option value="3">Radio</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label class="col-form-label form-label col-md-3">Answers:</label>
+                <div class="col-md-9">
+                  <a
+                    href="#"
+                    class="btn btn-default"
+                  ><i class="material-icons">add</i> Add Answer</a>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label
+                  for="touch-spin-2"
+                  class="col-form-label form-label col-md-3"
+                >Question Score:</label>
+                <div class="col-md-4">
+                  <input
+                    id="touch-spin-2"
+                    data-toggle="touch-spin"
+                    data-min="0"
+                    data-max="100"
+                    data-step="5"
+                    type="text"
+                    value="50"
+                    name="demo2"
+                    class="form-control"
+                  />
+                </div>
+              </div>
+              <div class="form-group row mb-0">
+                <div class="col-md-8 offset-md-3">
+                  <button
+                    type="submit"
+                    class="btn btn-success"
+                  >Save</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /modal -->
+
+  </div>
+
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      courses: [],
+      lessons: [],
+      quizzes: [],
+      quiz: {
+        title: "",
+        description: "",
+        course_id: null,
+        quiz_image: null,
+        previous_quiz_id: null,
+        number_of_possible_retake: 0
+      },
+      GUI: {
+        SHOW_RETAKE: false,
+        SHOW_DURATION: false,
+        SHOW_PREVIOUS_QUIZ_INPUT: false,
+        SHOW_GRADE_TO_PASS_INTPUT: false,
+        SHOW_MODAL: false,
+        SHOW_QUESTION_ERROR: false
+      },
+      added_error_messages: [],
+      added_success: false,
+      added_error: false
+    };
+  },
+
+  mounted() {
+    this.getCourses();
+    this.getQuizCreated();
+    this.init();
+  },
+
+  methods: {
+    createQuiz() {
+      this.$store.dispatch("enableLoading");
+      if (!this.GUI.SHOW_RETAKE) {
+        delete this.quiz.retake_after;
+      }
+      if (!this.GUI.SHOW_DURATION) {
+        delete this.quiz.duration;
+      }
+      if (!this.GUI.SHOW_GRADE_TO_PASS_INTPUT) {
+        delete this.quiz.grade_to_pass;
+      }
+      axios
+        .post(this.routes.quiz.CREATE_QUIZ, this.quiz)
+        .then(response => {
+          this.$store.dispatch("disableLoading");
+          this.added_success = true;
+          this.added_error = false;
+          this.$router.push({
+            name: "instructor_edit_quiz",
+            params: { id: response.data.id }
+          });
+        })
+        .catch(err => {
+          this.$store.dispatch("disableLoading");
+          this.added_error_messages = err.response.data;
+          this.added_error = true;
+          this.added_success = false;
+        });
+    },
+
+    onImageInputChanged(event) {
+      var file = event.target.files[0];
+      var reader = new FileReader();
+      reader.readAsBinaryString(file);
+
+      reader.onload = () => {
+        this.quiz.quiz_image = "";
+        this.quiz.image = "data:image/jpeg;base64," + btoa(reader.result);
+        this.quiz.quiz_image = "data:image/jpeg;base64," + btoa(reader.result);
+      };
+      reader.onerror = () => {
+        console.log("there are some problems");
+      };
+    },
+
+    getCourses() {
+      axios.get(this.routes.course.GET_BY_INSTRUCTOR).then(response => {
+        this.courses = response.data;
+      });
+    },
+
+    getQuizCreated() {
+      axios.get(this.routes.quiz.GET_CREATED).then(response => {
+        this.quizzes = response.data;
+      });
+    },
+
+    // getLessons() {
+    //   axios
+    //     .get(this.routes.lesson.GET_ALL_BY_COURSE, {
+    //       params: {
+    //         course_id: this.quiz.course_id
+    //       }
+    //     })
+    //     .then(response => {
+    //       this.lessons = response.data;
+    //     });
+    // },
+
+    init() {
+      var self = this;
+
+      $("#addQuestion").on("hidden.bs.modal", function(e) {
+        self.GUI.SHOW_MODAL = false;
+      });
+      $("#addQuestion").on("show.bs.modal", function(e) {
+        self.GUI.SHOW_MODAL = true;
+      });
+
+      //--------Initialize the nested-----------//
+      !(function(e) {
+        var t = {};
+        function n(s) {
+          if (t[s]) return t[s].exports;
+          var l = (t[s] = { i: s, l: !1, exports: {} });
+          return e[s].call(l.exports, l, l.exports, n), (l.l = !0), l.exports;
+        }
+        (n.m = e),
+          (n.c = t),
+          (n.d = function(e, t, s) {
+            n.o(e, t) ||
+              Object.defineProperty(e, t, {
+                configurable: !1,
+                enumerable: !0,
+                get: s
+              });
+          }),
+          (n.n = function(e) {
+            var t =
+              e && e.__esModule
+                ? function() {
+                    return e.default;
+                  }
+                : function() {
+                    return e;
+                  };
+            return n.d(t, "a", t), t;
+          }),
+          (n.o = function(e, t) {
+            return Object.prototype.hasOwnProperty.call(e, t);
+          }),
+          (n.p = "/"),
+          n((n.s = 366));
+      })({
+        366: function(e, t, n) {
+          e.exports = n(367);
+        },
+        367: function(e, t, n) {
+          "use strict";
+          var s;
+          ((s = jQuery).fn.APNestable = function() {
+            this.length &&
+              void 0 !== s.fn.nestable &&
+              this.nestable({
+                rootClass: "nestable",
+                listNodeName: "ul",
+                listClass: "nestable-list",
+                itemClass: "nestable-item",
+                dragClass: "nestable-drag",
+                handleClass: "nestable-handle",
+                collapsedClass: "nestable-collapsed",
+                placeClass: "nestable-placeholder",
+                emptyClass: "nestable-empty"
+              });
+          }),
+            s(".nestable").APNestable();
+        }
+      });
+    }
+  }
+};
+</script>
+
+<style lang="scss">
+</style>

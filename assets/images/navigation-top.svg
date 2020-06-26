@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="160" viewBox="0 0 200 160">
+  <defs>
+    <rect id="navigation-top-a" width="200" height="160" rx="2"/>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <mask id="navigation-top-b" fill="#fff">
+      <use xlink:href="#navigation-top-a"/>
+    </mask>
+    <use fill="#39444D" fill-rule="nonzero" xlink:href="#navigation-top-a"/>
+    <polygon fill="#2E3133" fill-opacity=".9" fill-rule="nonzero" points="0 42 200 42 200 43 0 43" mask="url(#navigation-top-b)"/>
+    <rect width="184" height="26" x="8" y="8" fill="#CFDBE6" fill-rule="nonzero" mask="url(#navigation-top-b)" rx="3"/>
+    <rect width="176" height="97" x="12" y="51" fill="#262D33" fill-opacity=".5" fill-rule="nonzero" mask="url(#navigation-top-b)" rx="3"/>
+  </g>
+</svg>

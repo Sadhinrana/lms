@@ -1,0 +1,129 @@
+<template>
+  <div class="container-fluid page__container">
+    <!-- <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <router-link :to="{ name: 'home'}">Home</router-link>
+      </li>
+      <li class="breadcrumb-item active">Dashboard</li>
+    </ol>-->
+    <h1 class="h2">Quiz review</h1>
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <div class="card-header d-flex align-items-center">
+            <div class="flex">
+              <h4
+                class="card-title"
+              >{{ questions_answered_count }}/{{ questions.length }} questions anwered</h4>
+            </div>
+          </div>
+          <ul class="list-group list-group-fit mb-0">
+            <li class="list-group-item" :key="question.id" v-for="question in questions" @click="reviewQuestion(question)">
+              <div class="media align-items-center">
+                <div class="media-body">
+                  <a class="text-body">
+                    <strong>{{ question.title }}</strong>
+                  </a>
+                </div>
+                <div class="media-right">
+                  <div class="text-center">
+                    <span
+                      :class="['badge badge-pill', question.student_answer.length > 0 ? 'badge-success' : 'badge-warning']"
+                    >{{ question.student_answer.length > 0 ? 'ANSWERED' : 'NOT ANSWERED'}}</span>
+                  </div>
+                </div>
+              </div>
+            </li>
+          </ul>
+          <div class="card-footer">
+            <a href="#" @click.prevent="backToLastQuestion" class="btn btn-primary float-left">
+              <
+              Back
+            </a>
+            <a href="#" @click.prevent="markQuizAttemptAsDone" class="btn btn-success float-right">
+              Submit quiz
+              <i class="material-icons btn__icon--right">send</i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      questions: [],
+      questions_answered_count: 0
+    };
+  },
+
+  mounted() {
+    this.getAllQuestionByQuizIDForReview();
+  },
+
+  methods: {
+
+    backToLastQuestion() {
+      this.$router.push(
+        {
+          name: "review_quiz_attempt_question",
+          params: {
+            quiz_id: this.$route.params.quiz_id,
+            question_id: this.questions[this.questions.length - 1].id
+          }
+        }
+      )
+    },
+
+    reviewQuestion(question) {
+      this.$router.push(
+        {
+          name: "review_quiz_attempt_question",
+          params: {
+            quiz_id: this.$route.params.quiz_id,
+            question_id: question.id
+          }
+        }
+      )
+    },
+
+    markQuizAttemptAsDone() {
+      axios
+        .post(this.routes.quiz.MARK_QUIZ_ATTEMPT_AS_DONE, {
+          quiz_id: this.$route.params.quiz_id,
+          attempt_id: this.$route.params.attempt_id
+        })
+        .then(response => {
+          this.$router.push({
+            name: "quiz_result",
+            params: {
+              quiz_id: this.$route.params.quiz_id,
+              attempt_id: this.$route.params.attempt_id
+            }
+          });
+        });
+    },
+
+    getAllQuestionByQuizIDForReview() {
+      axios
+        .get(this.routes.question.GET_ALL_QUESTION_BY_QUIZ_ID_FOR_REVIEW, {
+          params: {
+            quiz_id: this.$route.params.quiz_id,
+            attempt_id: this.$route.params.attempt_id
+          }
+        })
+        .then(response => {
+          this.questions = response.data;
+          this.questions.forEach(q => {
+            if (q.student_answer.length > 0) {
+              this.questions_answered_count++;
+            }
+          });
+        });
+    }
+  }
+};
+</script>

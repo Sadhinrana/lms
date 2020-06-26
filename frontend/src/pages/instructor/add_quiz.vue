@@ -1,0 +1,2024 @@
+<template>
+    <div class="">
+
+        <div
+                class="container-fluid page__container"
+                :class="GUI.SHOW_MODAL ? 'fit-height' : ''"
+        >
+            <h1 class="h2">Add a New Exam</h1>
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Basic
+                        <a
+                                href="#"
+                                @click.prevent="GUI.SHOW_QUIZ_CONTENT = !GUI.SHOW_QUIZ_CONTENT"
+                                class=""
+                                style="color:#2196f3; float:right;"
+                        >
+                            <i
+                                    class="material-icons"
+                                    style="transform:rotate(180deg)"
+                                    v-if="GUI.SHOW_QUIZ_CONTENT"
+                            >arrow_drop_down_circle</i>
+                            <i
+                                    class="material-icons"
+                                    v-if="!GUI.SHOW_QUIZ_CONTENT"
+                            >arrow_drop_down_circle</i>
+                        </a>
+
+                    </h4>
+                </div>
+                <div class="card-body" v-if="GUI.SHOW_QUIZ_CONTENT">
+                    <form @submit.prevent="createQuiz">
+                        <div class="form-group row">
+                            <label for="quiz_title" class="col-sm-3 col-form-label form-label">Exam Title:</label>
+                            <div class="col-sm-9">
+                                <input id="quiz_title" type="text" class="form-control" placeholder="Quiz title"
+                                       v-model="quiz.title"/>
+
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="quiz_title" class="col-sm-3 col-form-label form-label">Exam Description:</label>
+                            <div class="col-sm-9">
+					<textarea id="quiz_title" type="text" class="form-control" placeholder="Quiz description"
+                              v-model="quiz.description">
+					</textarea>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="course_title" class="col-sm-3 col-form-label form-label">Course:</label>
+                            <div class="col-sm-9 col-md-4">
+                                <select id="course_title" v-model="quiz.course_id" class="custom-select form-control">
+                                    <option :value="null" disabled>Select a course</option>
+                                    <option v-for="course in courses" :key="course.id" :value="course.id">
+                                        {{course.title}}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="cmn-toggle" class="col-sm-3 col-form-label form-label">Previous Exam</label>
+                            <div class="col-sm-9">
+                                <div class="form-group">
+                                    <div class="custom-control custom-checkbox-toggle">
+                                        <input id="cmn-toggle-previous-quiz" type="checkbox" aria-checked="false"
+                                               class="custom-control-input" role="switch"
+                                               @click="GUI.SHOW_PREVIOUS_QUIZ_INPUT=!GUI.SHOW_PREVIOUS_QUIZ_INPUT">
+                                        <label class="custom-control-label" for="cmn-toggle-previous-quiz"><span
+                                                class="sr-only">Timeframe</span></label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4" v-show="GUI.SHOW_PREVIOUS_QUIZ_INPUT">
+                                    <select id="course_title" class="custom-select form-control"
+                                            v-model="quiz.previous_quiz_id">
+                                        <option :value="null" disabled>Select a previous Exam</option>
+                                        <option v-for="quiz in quizzes" :key="quiz.id" :value="quiz.id">{{quiz.title}}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="quiz_image" class="col-sm-3 col-form-label form-label">Exam Image:</label>
+                            <div class="col-sm-9 col-md-4">
+                                <p>
+                                    <img :src="quiz.quiz_image" alt="" width="150" class="rounded"
+                                         v-if="quiz.quiz_image">
+                                    <img v-else src="assets/images/vuejs.png" alt="" width="100" class="rounded">
+                                </p>
+                                <div class="custom-file">
+                                    <input type="file" id="quiz_image" class="custom-file-input"
+                                           @change="onImageInputChanged">
+                                    <label for="quiz_image" class="custom-file-label">Choose file</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="cmn-toggle" class="col-sm-3 col-form-label form-label">Duration</label>
+                            <div class="col-sm-9">
+                                <div class="form-group">
+                                    <div class="custom-control custom-checkbox-toggle">
+                                        <input id="cmn-toggle" type="checkbox" aria-checked="false"
+                                               class="custom-control-input" role="switch" ref="durationInputToggle"
+                                               @click="GUI.SHOW_DURATION=!GUI.SHOW_DURATION">
+                                        <label class="custom-control-label" for="cmn-toggle"><span class="sr-only">Timeframe</span></label>
+                                    </div>
+                                </div>
+                                <div class="form-inline" v-show="GUI.SHOW_DURATION">
+                                    <div class="form-group mr-2">
+                                        <input type="number" v-model="quiz.duration" class="form-control text-center"
+                                               value="90" style="width:80px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <span class="text-center">minutes</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="cmn-toggle" class="col-sm-3 col-form-label form-label">Retake after</label>
+                            <div class="col-sm-9">
+                                <div class="form-group">
+                                    <div class="custom-control custom-checkbox-toggle">
+                                        <input id="cmn-toggle-retake" type="checkbox" aria-checked="false"
+                                               class="custom-control-input" role="switch" ref="retakeInputToggle"
+                                               @click="GUI.SHOW_RETAKE=!GUI.SHOW_RETAKE">
+                                        <label class="custom-control-label" for="cmn-toggle-retake"><span
+                                                class="sr-only">Timeframe</span></label>
+                                    </div>
+                                </div>
+                                <div class="form-inline" v-show="GUI.SHOW_RETAKE">
+                                    <div>
+                                        <div class="form-group mr-2">
+                                            <input type="number" class="form-control text-center" value="90"
+                                                   v-model="quiz.retake_after" style="width:80px;">
+                                        </div>
+                                        <div class="form-group" style="display: block">
+                                            <span class="text-center">minutes</span>
+                                        </div>
+                                    </div>
+                                    <div style="margin-right:10px; position:relative; top: -10px;">with</div>
+                                    <div>
+                                        <div class="form-group mr-2">
+                                            <input type="number" class="form-control text-center" value="90"
+                                                   v-model="quiz.number_of_possible_retake" style="width:80px;">
+                                        </div>
+                                        <div class="form-group">
+                                            <span class="text-center">retake time(s)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="cmn-toggle" class="col-sm-3 col-form-label form-label">Grade to pass</label>
+                            <div class="col-sm-9">
+                                <div class="form-group">
+                                    <div class="custom-control custom-checkbox-toggle">
+                                        <input id="cmn-toggle-grade" type="checkbox" aria-checked="false"
+                                               class="custom-control-input" role="switch" ref="gradeToPassInputToggle"
+                                               @click="GUI.SHOW_GRADE_TO_PASS_INTPUT=!GUI.SHOW_GRADE_TO_PASS_INTPUT">
+                                        <label class="custom-control-label" for="cmn-toggle-grade"><span
+                                                class="sr-only">Timeframe</span></label>
+                                    </div>
+                                </div>
+                                <div class="form-inline" v-show="GUI.SHOW_GRADE_TO_PASS_INTPUT">
+                                    <div class="form-group mr-2">
+                                        <input type="number" class="form-control text-center" value="90"
+                                               v-model="quiz.grade_to_pass" style="width:80px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <span class="text-center">points.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-0">
+                            <div class="card-header" style="margin-left:auto;">
+                                <!-- <button type="submit" data-toggle="modal" data-target="#editQuiz" class="btn btn-secondary">Add A Question<i class="material-icons">add</i></button> -->
+                                <button type="submit" class="btn btn-success ml-2">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-12">
+                    <div
+                            class="alert alert-dismissible bg-success text-white border-0 fade"
+                            :class="addedd_success?'show':''"
+                            v-if="added_success"
+                            role="alert"
+                    >
+                        Added <strong>successfully !</strong>
+                    </div>
+                    <div
+                            class="alert alert-dismissible bg-danger text-white border-0 fade"
+                            :class="added_error?'show':''"
+                            v-if="added_error"
+                            v-for="error in added_error_messages.errors"
+                            role="alert"
+                    >
+                        <strong>Error ! </strong> {{error[0]}}
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Questions</h4>
+                </div>
+                <div class="card-header">
+                    <!-- <a href="#" data-toggle="modal" data-target="#editQuiz" @click.prevent="fixValidation" class="btn btn-outline-secondary">Add Question <i class="material-icons">add</i></a> -->
+                    <a href="#" @click.prevent="fixValidation" class="btn btn-outline-secondary">Add Question <i
+                            class="material-icons">add</i></a>
+                </div>
+                <div class="nestable" id="nestable">
+                    <ul class="list-group list-group-fit nestable-list-plain mb-0">
+                        <li class="list-group-item nestable-item" v-for="(question,index) in questions"
+                            :data-id="question.id">
+
+                            <div class="media align-items-center">
+                                <div class="media-left">
+                                    <router-link :to="{ name: 'instructor_edit_lesson', params: {id:question.id} }"
+                                                 class="btn btn-default nestable-handle">
+                                        <i class="material-icons">menu</i>
+                                    </router-link>
+                                </div>
+                                <div class="media-body">
+                                    {{question.title}}
+                                </div>
+                                <div class="media-right text-right">
+                                    <div style="width:100px; display:inline-block">
+                                        <a href="#" data-toggle="modal" class="btn btn-primary btn-sm"
+                                           @click.prevent="getQuestionByID(question.id)"><i
+                                                class="material-icons">edit</i></a>
+                                        <a v-if="authUser.role !== 'content_manager'" href="#"
+                                           @click.prevent="deleteQuestion(question.id)"
+                                           class="btn btn-warning btn-sm" style="margin-left:10px;">
+                                            <i class="material-icons">delete_forever</i>
+                                        </a>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <ul class="nestable-list" v-if="question.child_questions.length > 0">
+                                <li class="list-group-item nestable-item"
+                                    v-for="(child_question,index) in question.child_questions"
+                                    :data-id="child_question.id">
+                                    <div class="media align-items-center">
+                                        <div class="media-left">
+                                            <router-link
+                                                    :to="{ name: 'instructor_edit_lesson', params: {id:child_question.id} }"
+                                                    class="btn btn-default nestable-handle">
+                                                <i class="material-icons">menu</i>
+                                            </router-link>
+                                        </div>
+                                        <div class="media-body" v-if="question.type == 'matching_as_image'">
+                                            <img :src="child_question.title" alt="" width="100" class="rounded">
+                                        </div>
+                                        <div class="media-body" v-else>
+                                            {{child_question.title}}
+                                        </div>
+                                        <div class="media-right text-right">
+                                            <div style="width:100px; display:inline-block">
+                                                <a href="#" data-toggle="modal" class="btn btn-primary btn-sm"
+                                                   @click.prevent="getQuestionByID(child_question.id)"><i
+                                                        class="material-icons">edit</i></a>
+                                                <a href="#" @click.prevent="deleteQuestion(child_question.id)"
+                                                   class="btn btn-warning btn-sm" style="margin-left:10px;">
+                                                    <i class="material-icons">delete_forever</i>
+                                                </a>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- modal add question -->
+        <div class="modal fade" :id="'editQuiz_'+modal_index">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary">
+                        <h4 class="modal-title text-white">Edit Question</h4>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="#">
+
+                            <div class="form-group row">
+                                <label for="title" class="col-form-label form-label col-md-3">Title:</label>
+                                <div class="col-md-9">
+                                    <input id="title" type="text" class="form-control" v-model="ques_data.title"
+                                           value="">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="quiz_image" class="col-sm-3 col-form-label form-label">Image:</label>
+                                <div class="col-sm-9 col-md-4">
+                                    <!-- <p> -->
+                                    <!-- <img :src="ques_data.question_image" alt="" width="150" class="rounded" v-if="ques_data.question_image"> -->
+                                    <!-- </p> -->
+                                    <div class="custom-file">
+                                        <input type="file" id="ques_data" class="custom-file-input"
+                                               @change="onImageAdd">
+                                        <label for="quiz_image" class="custom-file-label">Choose file</label>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="form-group row">
+                                <label for="video_link_input" class="col-form-label form-label col-md-3">Video
+                                    link:</label>
+                                <div class="col-sm-9">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-checkbox-toggle">
+                                            <input id="video_link_input" type="checkbox" aria-checked="false"
+                                                   class="custom-control-input" role="switch"
+                                                   @click="GUI.SHOW_VIDEO_LINK_INPUT =!GUI.SHOW_VIDEO_LINK_INPUT">
+                                            <label class="custom-control-label" for="video_link_input"><span
+                                                    class="sr-only">video</span></label>
+                                        </div>
+                                    </div>
+                                    <div class="form-inline" v-show="GUI.SHOW_VIDEO_LINK_INPUT">
+                                        <div class="form-group mr-2">
+                                            <input type="text" class="form-control text-center"
+                                                   v-model="ques_data.video_link">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="video_link_input" class="col-form-label form-label col-md-3">Audio
+                                    File:</label>
+                                <div class="col-sm-9">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-checkbox-toggle">
+                                            <input id="audio_file_input_edit" type="checkbox" aria-checked="false"
+                                                   class="custom-control-input" role="switch"
+                                                   @click="GUI.SHOW_AUDIO_INPUT =!GUI.SHOW_AUDIO_INPUT">
+                                            <label class="custom-control-label" for="audio_file_input_edit"><span
+                                                    class="sr-only">Audio</span></label>
+                                        </div>
+                                    </div>
+                                    <div class="form-inline">
+                                    <span v-if="ques_data.audio">
+									  <a
+                                              :href="this.routes.server_api+ques_data.audio"
+                                              target="_blank"
+                                      >
+										Play Audio
+									  </a>
+									</span>
+                                        <br>
+                                    </div>
+                                    <div class="form-inline" v-show="GUI.SHOW_AUDIO_INPUT">
+                                        <div class="form-group mr-2">
+                                            <div class="custom-file">
+                                                <input type="file" id="question_audio" class="custom-file-input"
+                                                       @change="onAudioInputChanged($event)">
+                                                <label for="question_audio" class="custom-file-label">Choose
+                                                    file</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group row"
+                                 v-show="!['fill_in_blank', 'drag_drop', 'dropdown'].includes(ques_data.type)">
+                                <label for="title" class="col-form-label form-label col-md-3">Description:</label>
+
+                                <!-- quill_edit_description -->
+
+                                <div class="col-md-9" :id="'editor1_'+modal_index">
+                                    <div :id="'quillEditQuestion_'+modal_index" v-model="quill_edit_description"
+                                         style="height: 150px;" data-toggle="quill_edit_description"
+                                         data-quill-placeholder="Quill WYSIWYG editor">
+                                        <p></p>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                            <div class="form-group row">
+                                <label for="type" class="col-form-label form-label col-md-3">Type:</label>
+                                <div class="col-md-4">
+                                    <select id="type" class="custom-control custom-select form-control"
+                                            v-model="ques_data.type" @change="onQuestionTypeChanged($event)">
+                                        <option value="single_choice">Single Choice</option>
+                                        <option value="single_choice_as_image">Single Choice As Image</option>
+                                        <option value="multiple_choice">Multiple Choice</option>
+                                        <option value="fill_in_blank">Fill in blank</option>
+                                        <option value="dropdown">Dropdown</option>
+                                        <option value="matching">Matching</option>
+                                        <option value="matching_as_image">Matching As Image</option>
+                                        <option value="matching_text_image">Matching Text Image</option>
+                                        <option value="drag_drop">Drag & Drop</option>
+                                        <option value="summary">Summary</option>
+                                        <option value="sorting_horizontal">Sorting Horizontal</option>
+                                        <option value="parent">Parent</option>
+                                        <option value="single_set">Single SET</option>
+                                        <!-- <option value="math_set">Math SET</option> -->
+                                    </select>
+
+                                </div>
+                            </div>
+
+                            <!-- <div class="form-group row" v-if="['math_set'].includes(ques_data.type)"> -->
+                            <!-- <label class="col-form-label form-label col-md-3">Question:</label> -->
+                            <!-- <template> -->
+                            <!-- <div class="col-sm-4"> -->
+                            <!-- <textarea v-model="ques_data.formula" cols="20" rows="5"></textarea> -->
+                            <!-- </div> -->
+                            <!-- <div class="col-sm-4"> -->
+                            <!-- <katex-element v-bind:expression="ques_data.formula"/> -->
+                            <!-- </div> -->
+                            <!-- </template> -->
+                            <!-- </div> -->
+
+                            <div class="form-group row" v-if="!not_add_answers_type.includes(ques_data.type)">
+                                <label class="col-form-label form-label col-md-3">Answers:</label>
+                                <div class="col-md-3">
+                                    <a class="btn btn-default" @click.prevent="addInputAnswer"><i
+                                            class="material-icons">add</i> Add Answer</a>
+                                </div>
+                                <div class="col-md-3" v-show="['single_set'].includes(ques_data.type)">
+                                    <!-- <a class="btn btn-default" @click.prevent="addInputQuestion"><i class="material-icons">add</i> Bind Answer - {{question_index}}</a> -->
+                                    <select id="type" class="custom-control custom-select form-control"
+                                            @change="onChangeSingleSet($event)">
+                                        <option :value="null" readonly>--Select--</option>
+                                        <option v-for="get_parent in get_single_set_parent" :value="get_parent.id">
+                                            {{get_parent.title}}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-12">
+                                    <div class="quill-outer"
+                                         v-show="['fill_in_blank', 'drag_drop', 'dropdown'].includes(ques_data.type)">
+                                        <div :id="'quill_'+modal_index" v-model="fill_in_blank_question"
+                                             style="height: 150px;" data-toggle="fill_in_blank_question"
+                                             data-quill-placeholder="Quill WYSIWYG editor">
+                                            <p></p>
+                                        </div>
+                                    </div>
+
+
+                                    <div v-if="single_set_parent != null">
+                                        <table id="answerTable" class="col-12"
+                                               v-if="['single_set'].includes(ques_data.type)">
+
+                                            <thead>
+                                            <tr class="border-bottom">
+                                                <th style="font-size:14px;font-weight:400;width:5%;"
+                                                    class="col-2 text-center">#
+                                                </th>
+                                                <th style="font-size:14px;font-weight:400;width:65%;" class="col-6">
+                                                    Question
+                                                </th>
+                                                <th style="font-size:14px;font-weight:400;" class="col-3">Answer</th>
+                                                <th class="col-1" style="width:5%"></th>
+                                            </tr>
+                                            </thead>
+
+                                            <tbody v-if="ques_data.type == 'single_set'">
+                                            <tr v-for="(item, index) in answers">
+                                                <td class="text-center">{{index+1}}</td>
+                                                <td>
+                                                    <input type="text" class="form-control"
+                                                           v-model="answers[index].title">
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="radio" name="answer_radio" :value="1"
+                                                           v-if="ques_data.type == 'single_set'"
+                                                           v-model="answers[index].is_correct"
+                                                           @click="markAnswersAsCorrect(answers[index])">
+                                                </td>
+                                                <td>
+                                                    <a href="#" @click.prevent="removeAnswer(index, ques_data.type)"
+                                                       class="btn btn-warning btn-sm">
+                                                        <i class="material-icons">delete_forever</i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <table id="answerTable" class="col-12"
+                                           v-if="['single_choice_as_image'].includes(ques_data.type)">
+
+                                        <thead>
+                                        <tr class="border-bottom">
+                                            <th style="font-size:14px;font-weight:400;width:5%;"
+                                                class="col-2 text-center">#
+                                            </th>
+                                            <th style="font-size:14px;font-weight:400;width:65%;" class="col-6">
+                                                Question
+                                            </th>
+                                            <th style="font-size:14px;font-weight:400;width:20%;" class="col-6">Image
+                                            </th>
+                                            <th style="font-size:14px;font-weight:400;" class="col-3">Answer</th>
+                                            <th class="col-1" style="width:5%"></th>
+                                        </tr>
+                                        </thead>
+
+
+                                        <tbody v-if="ques_data.type == 'single_choice_as_image'">
+                                        <tr v-for="(item, index) in answers">
+                                            <td class="text-center">{{index+1}}</td>
+                                            <td>
+                                                <input type="file" class="form-control"
+                                                       @change="addQuestionImage($event)">
+                                            </td>
+                                            <td>
+                                                <img v-if="item.title" :src="item.title" alt="something wrong in image"
+                                                     width="50" class="rounded">
+                                            </td>
+                                            <td class="text-center">
+                                                <input type="radio" name="answer_radio" :value="1"
+                                                       v-if="ques_data.type == 'single_choice_as_image'"
+                                                       v-model="answers[index].is_correct"
+                                                       @click="markAnswersAsCorrect(answers[index])">
+                                            </td>
+                                            <td>
+                                                <a href="#" @click.prevent="removeAnswer(index, ques_data.type)"
+                                                   class="btn btn-warning btn-sm">
+                                                    <i class="material-icons">delete_forever</i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+
+                                    </table>
+
+                                    <table id="answerTable" class="col-12"
+                                           v-if="['matching_as_image'].includes(ques_data.type)">
+
+                                        <thead>
+                                        <tr class="border-bottom">
+                                            <th style="font-size:14px;font-weight:400;width:50px;"
+                                                class="col-2x text-center">#
+                                            </th>
+                                            <th style="font-size:14px;font-weight:400;" class="col-6x">Question Image
+                                            </th>
+                                            <th style="font-size:14px;font-weight:400;" class="col-3x">Answer Image</th>
+                                            <th class="col-1x"></th>
+                                        </tr>
+                                        </thead>
+
+                                        <tbody v-if="ques_data.type == 'matching_as_image'">
+                                        <tr v-for="(item, index) in answers">
+                                            <td class="text-center">{{index+1}}</td>
+                                            <td class="text-center" v-if="item.title">
+                                                <img :src="item.title" alt="" width="100" class="rounded"
+                                                     v-if="item.title">
+                                            </td>
+                                            <td v-else>
+                                                <input type="file" class="form-control"
+                                                       @change="addQuestionImageForMatching($event, index)">
+                                                <input type="hidden" class="form-control" v-model="item.question">
+                                            </td>
+                                            <td class="text-center" v-if="item.answers">
+                                                <img :src="item.answers[0].title"" alt="" width="100" class="rounded"
+                                                v-if="item.answers[0].title">
+                                            </td>
+                                            <td class="text-center" v-else>
+                                                <input type="file" class="form-control"
+                                                       @change="addAnswerImageForMatching($event, index)">
+                                                <input type="hidden" class="form-control" v-model="item.answer">
+                                            </td>
+                                            <td>
+                                                <a href="#" @click.prevent="removeAnswer(index, ques_data.type)"
+                                                   class="btn btn-warning btn-sm">
+                                                    <i class="material-icons">delete_forever</i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <table id="answerTable" class="col-12"
+                                           v-if="['matching_text_image'].includes(ques_data.type)">
+                                        <thead>
+                                        <tr class="border-bottom">
+                                            <th style="font-size:14px;font-weight:400;width:50px;"
+                                                class="col-2x text-center">#
+                                            </th>
+                                            <th style="font-size:14px;font-weight:400;" class="col-6x">Question</th>
+                                            <th style="font-size:14px;font-weight:400;" class="col-3x">Answer Image</th>
+                                            <th class="col-1x"></th>
+                                        </tr>
+                                        </thead>
+
+                                        <tbody>
+                                        <tr v-for="(item, index) in answers">
+                                            <td class="text-center">{{index+1}}</td>
+                                            <td class="text-center" v-if="item.title">
+                                                <input type="text" class="form-control" v-model="item.title">
+                                            </td>
+                                            <td v-else>
+                                                <input type="text" class="form-control" v-model="item.question">
+                                            </td>
+                                            <td class="text-center" v-if="item.answers">
+                                                <img :src="item.answers[0].title"" alt="" width="100" class="rounded"
+                                                v-if="item.answers[0].title">
+                                            </td>
+                                            <td class="text-center" v-else>
+                                                <input type="file" class="form-control"
+                                                       @change="addAnswerImageForMatching($event, index)">
+                                                <input type="hidden" class="form-control" v-model="item.answer">
+                                            </td>
+                                            <td>
+                                                <a href="#" @click.prevent="removeAnswer(index, ques_data.type)"
+                                                   class="btn btn-warning btn-sm">
+                                                    <i class="material-icons">delete_forever</i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <table id="answerTable" class="col-12"
+                                           v-if="!['fill_in_blank', 'drag_drop', 'dropdown','parent','single_choice_as_image','matching_as_image','single_set','matching_text_image','math_set'].includes(ques_data.type)">
+                                        <thead v-if="ques_data.type == 'matching'">
+                                        <tr class="border-bottom">
+                                            <th style="font-size:14px;font-weight:400;width:5%;"
+                                                class="col-2 text-center">#
+                                            </th>
+                                            <th style="font-size:14px;font-weight:400;width:65%;" class="col-6">
+                                                Question
+                                            </th>
+                                            <th style="font-size:14px;font-weight:400;" class="col-3">Answer</th>
+                                            <th class="col-1" style="width:5%"></th>
+                                        </tr>
+                                        </thead>
+                                        <thead v-else>
+                                        <tr class="border-bottom">
+                                            <th style="font-size:14px;font-weight:400;width:50px;"
+                                                class="col-2 text-center">#
+                                            </th>
+                                            <th style="font-size:14px;font-weight:400;" class="col-7">Title</th>
+                                            <th style="font-size:14px;font-weight:400;" class="col-2">
+                                                <span v-if="!['sorting_horizontal','summary'].includes(ques_data.type)">
+													Correct
+												</span>
+                                            </th>
+                                            <th class="col-1"></th>
+                                        </tr>
+                                        </thead>
+                                        <!-- This only show when question type is Yes_No -->
+                                        <tbody v-if="ques_data.type == 'yes_no' || ques_data.type == 'true_false'">
+                                        <tr v-for="(answer, index) in boolean_answers">
+                                            <td class="text-center">{{index+1}}</td>
+                                            <td>
+                                                <span>{{ answer.title }}</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <input type="radio" name="answer_radio" :value="1"
+                                                       v-model="answer.is_correct"
+                                                       @click="markAnswersAsCorrect(answer,true)">
+                                            </td>
+                                            <td>
+
+                                            </td>
+                                        </tr>
+                                        </tbody>
+
+                                        <tbody v-if="ques_data.type == 'matching'">
+                                        <tr v-for="(item, index) in answers">
+                                            <td class="text-center">{{index+1}}</td>
+                                            <td v-if="item.title">
+                                                <input type="text" class="form-control" v-model="item.title">
+                                            </td>
+                                            <td v-else>
+                                                <input type="text" class="form-control" v-model="item.question">
+                                            </td>
+                                            <td class="text-center" v-if="item.answers">
+                                                <input type="text" class="form-control" v-model="item.answers[0].title">
+                                            </td>
+                                            <td class="text-center" v-else>
+                                                <input type="text" class="form-control" v-model="item.answer">
+                                            </td>
+                                            <td>
+                                                <a href="#" @click.prevent="removeAnswer(index, ques_data.type)"
+                                                   class="btn btn-warning btn-sm">
+                                                    <i class="material-icons">delete_forever</i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+
+                                        <tbody v-else>
+                                        <tr v-for="(item, index) in answers">
+                                            <td class="text-center">{{index+1}}</td>
+                                            <td>
+                                                <span v-if="ques_data.type == 'yes_no'"></span>
+                                                <input type="text" class="form-control" v-model="answers[index].title">
+                                            </td>
+                                            <td class="text-center"
+                                                v-if="!['sorting_horizontal','summary'].includes(ques_data.type)">
+                                                <input type="radio" name="answer_radio" :value="1"
+                                                       v-if="ques_data.type == 'single_choice'"
+                                                       v-model="answers[index].is_correct"
+                                                       @click="markAnswersAsCorrect(answers[index])">
+
+                                                <input type="checkbox" name="" :value="1"
+                                                       v-model="answers[index].is_correct"
+                                                       v-else-if="ques_data.type == 'multiple_choice'">
+
+                                                <input type="checkbox" name="" :value="1"
+                                                       v-model="answers[index].is_correct" v-else>
+                                            </td>
+                                            <td>
+                                                <a href="#" @click.prevent="removeAnswer(index, ques_data.type)"
+                                                   class="btn btn-warning btn-sm">
+                                                    <i class="material-icons">delete_forever</i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="form-group row" v-if="ques_data.type !== 'parent'">
+                                <label for="touch-spin-2" class="col-form-label form-label col-md-3">Question
+                                    Score:</label>
+                                <div class="col-md-4">
+                                    <input id="touch-spin-2" data-toggle="touch-spin" data-min="0" data-max="100"
+                                           data-step="5" type="text" v-model="ques_data.score" class="form-control"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group row mb-0">
+                                <div class="col-md-8 offset-md-3">
+                                    <a href="#" class="btn btn-success" @click.prevent="createAns">Save</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="alert alert-dismissible bg-success text-white border-0 fade"
+                             :class="added_success?'show':''" v-if="added_success" role="alert">
+                            Added question <strong>successfully !</strong>
+                        </div>
+                        <div class="alert alert-dismissible bg-danger text-white border-0 fade"
+                             :class="added_error?'show':''" v-if="added_error"
+                             v-for="error in added_error_messages.errors" role="alert">
+                            <strong>Error ! </strong> {{error[0]}}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</template>
+
+<script>
+    import {
+        QuillDeltaToHtmlConverter
+    }
+        from "quill-delta-to-html";
+    import Loading from "vue-loading-overlay";
+    import katex from "katex"
+    import 'katex/dist/katex.min.css';
+
+    export default {
+        components: {
+            Loading
+        },
+        data() {
+            return {
+                courses: [],
+                lessons: [],
+                quizzes: [],
+                questions: [],
+                answers_in_delete_queue: [],
+                not_add_answers_type: [
+                    "fill_in_blank",
+                    "drag_drop",
+                    "yes_no",
+                    "true_false",
+                    "parent",
+                    "dropdown"
+                ],
+                quiz: {
+                    title: "",
+                    description: "",
+                    course_id: null,
+                    quiz_image: null,
+                    previous_quiz_id: null,
+                    number_of_possible_retake: 0
+                },
+                is_correct: false,
+                answers: [],
+                boolean_answers: [],
+                boolean_choose: 0,
+                fill_in_blank_question: "",
+                GUI: {
+                    SHOW_RETAKE: false,
+                    SHOW_DURATION: false,
+                    SHOW_PREVIOUS_QUIZ_INPUT: false,
+                    SHOW_GRADE_TO_PASS_INTPUT: false,
+                    SHOW_MODAL: false,
+                    SHOW_VIDEO_LINK_INPUT: false,
+                    SHOW_AUDIO_INPUT: false,
+                    IS_LOADING: false,
+                    SHOW_QUIZ_CONTENT: true
+                },
+                answer_quest: [],
+                question_data: [],
+                ques_data: {
+                    title: "",
+                    formula: "",
+                    description: "",
+                    image: null,
+                    audio: null,
+                    type: "single_choice",
+                    score: 3,
+                    course_id: null,
+                    quiz_id: null,
+                    parent_id: "",
+                    id: null,
+                    video_link: "",
+                    parent_id: null,
+                    answer_data: null,
+                },
+
+                quill_description: '',
+                quill_edit_description: '',
+                orderTimes: 1,
+                added_error_messages: [],
+                added_success: false,
+                added_error: false,
+                single_choice_as_image: [],
+                matching_as_image: [],
+                question_index: 1,
+                for_question_index_input: 1,
+                modal_index: 1,
+                get_single_set_parent: [],
+                single_set_parent: null
+            };
+        },
+
+        watch: {
+            boolean_choose: function (newAnswer, oldAnswer) {
+                this.boolean_answers[0].is_correct = newAnswer == 1 ? 1 : 0;
+                this.boolean_answers[1].is_correct = !this.boolean_answers[0].is_correct;
+            }
+        },
+
+        mounted() {
+            this.$session.start();
+            this.ques_data.quiz_id = this.$route.params.id;
+            this.ques_data.course_id = this.$route.params.course_id;
+            window.katex = katex;
+            this.getCourses();
+            this.getQuizCreated();
+            this.init(this.$route.params.id);
+            this.initQuillEditor();
+            this.fetchQuestion(this.$route.params.id);
+
+        },
+
+        methods: {
+
+            fixValidation() {
+                this.ques_data.score = 3;
+                $("#editQuiz_" + this.modal_index).modal();
+
+            },
+
+            createAns() {
+                if (!this.$route.params.id) {
+                    swal('Please Create Exam First');
+                } else {
+                    this.ques_data.quiz_id = this.$route.params.id;
+                    this.ques_data.course_id = this.$route.params.course_id;
+
+                    if ((this.ques_data.type == 'single_choice' || this.ques_data.type == 'single_choice_as_image' || this.ques_data.type == 'multiple_choice' || this.ques_data.type == 'matching' || this.ques_data.type == 'matching_as_image' || this.ques_data.type == 'matching_text_image' || this.ques_data.type == 'summary' || this.ques_data.type == 'sorting_horizontal' || this.ques_data.type == 'math_set') && (this.answers.length == 0)) {
+                        alert('Please Write Answer');
+                        return;
+                    }
+
+                    if (this.ques_data.type == 'single_choice' || this.ques_data.type == 'single_choice_as_image' || this.ques_data.type == 'multiple_choice') {
+                        var cnt = 0;
+                        this.answers.forEach(arr => {
+                            if (arr.is_correct == 1) {
+                                cnt++;
+                            }
+                        });
+                        if (cnt <= 0) {
+                            alert('Please choose at least 1 correct answer.');
+                            return;
+                        }
+                    } else if (this.ques_data.type == 'true_false' || this.ques_data.type == 'yes_no') {
+                        var cnt = 0;
+                        this.boolean_answers.forEach(arr => {
+                            if (arr.is_correct == 1) {
+                                cnt++;
+                            }
+                        });
+                        if (cnt <= 0) {
+                            alert('Please Select A Answer');
+                            return;
+                        }
+                    } else if (this.ques_data.type == 'matching' || this.ques_data.type == 'matching_as_image' || this.ques_data.type == 'matching_text_image') {
+                        var cnt = 0;
+                        var cnt1 = 0;
+                        this.answers.forEach(arr => {
+                            if (arr.question == '') {
+                                cnt++;
+                            }
+                            if (arr.answer == '') {
+                                cnt1++;
+                            }
+                        });
+                        if ((cnt != cnt1 || cnt == cnt1) && (cnt > 0 || cnt1 > 0)) {
+                            alert('Please choose at least 1 correct answer.');
+                            return;
+                        }
+                    } else if (this.ques_data.type == 'summary' || this.ques_data.type == 'sorting_horizontal') {
+                        var cnt = 0;
+                        // var cnt1 = 0;
+                        this.answers.forEach(arr => {
+                            if (arr.title == '') {
+                                cnt++;
+                            }
+                            if (arr.is_correct == 1) {
+                                cnt1++;
+                            }
+                        });
+                        if (cnt > 0) {
+                            alert('Please choose at least 1 correct answer.');
+                            return;
+                        }
+
+                        // if(cnt1<=0){
+                        // 	alert('Please Select A Answer');
+                        // 	return;
+                        // }
+
+                    } else if (this.ques_data.type == 'math_set') {
+                        if (this.ques_data.formula == '') {
+                            alert('Please Add Question');
+                            return;
+                        }
+                        var cnt = 0;
+                        this.answers.forEach(arr => {
+                            if (arr.title == '') {
+                                cnt++;
+                            }
+                        });
+                        if (cnt > 0) {
+                            alert('Please choose at least 1 correct answer.');
+                            return;
+                        }
+                    } else if (this.ques_data.type == 'single_set' && this.single_set_parent != null) {
+
+                        var cnt = 0;
+                        this.answers.forEach(arr => {
+                            if (arr.title == '') {
+                                cnt++;
+                            }
+                        });
+                        if (cnt > 0) {
+                            alert('Please choose at least 1 correct answer.');
+                            return;
+                        }
+
+
+                    }
+
+
+                    axios
+                        .post(this.routes.question.NEW_QUESTION, this.ques_data.quiz_id)
+                        .then(response => {
+                            this.createQuestion(response.data.id);
+                        });
+                }
+            },
+
+            createQuiz() {
+                if (this.quiz.title != null && this.quiz.description != null && this.quiz.course_id != null && !this.$route.params.id) {
+                    this.$store.dispatch("enableLoading");
+                    if (!this.GUI.SHOW_RETAKE) {
+                        delete this.quiz.retake_after;
+                    }
+                    if (!this.GUI.SHOW_DURATION) {
+                        delete this.quiz.duration;
+                    }
+                    if (!this.GUI.SHOW_GRADE_TO_PASS_INTPUT) {
+                        delete this.quiz.grade_to_pass;
+                    }
+                    axios
+                        .post(this.routes.quiz.CREATE_QUIZ, this.quiz)
+                        .then(response => {
+                            this.ques_data.id = response.data.question_id;
+                            this.$store.dispatch("disableLoading");
+                            //this.added_success = true;
+                            this.added_error = false;
+                            this.$router.push({
+                                name: "instructor_add_quizz",
+                                params: {course_id: response.data.course_id, id: response.data.id}
+                            });
+                            this.GUI.SHOW_QUIZ_CONTENT = false;
+                            this.quiz_block(response.data.course_id, response.data.id, response.data.title)
+                        })
+                        .catch(err => {
+                            this.$store.dispatch("disableLoading");
+                            this.added_error_messages = err.response.data;
+                            this.added_error = true;
+                            this.added_success = false;
+                        });
+                }
+            },
+
+            quiz_block(course_id, quiz_id, quiz_name) {
+                axios
+                    .post(this.routes.quiz.QUIZ_BLOCK, {
+                        course_id: course_id,
+                        quiz_id: quiz_id,
+                        quiz_name: quiz_name
+                    }).then(response => {
+                    console.log(response.data);
+                });
+            },
+
+            addQuestionImage(event) {
+                var file = event.target.files[0];
+                var reader = new FileReader();
+                reader.readAsBinaryString(file);
+
+                reader.onload = () => {
+                    this.single_choice_as_image.push("data:image/jpeg;base64," + btoa(reader.result));
+                };
+                reader.onerror = () => {
+                    console.log("there are some problems");
+                };
+            },
+
+            addQuestionImageForMatching(event, index) {
+                var file = event.target.files[0];
+                var reader = new FileReader();
+                reader.readAsBinaryString(file);
+
+                reader.onload = () => {
+                    this.matching_as_image.push("data:image/jpeg;base64," + btoa(reader.result));
+                    this.answers[index].question = this.matching_as_image[0];
+                    this.matching_as_image = [];
+                };
+                reader.onerror = () => {
+                    console.log("there are some problems");
+                };
+            },
+
+            addAnswerImageForMatching(event, index) {
+                var file = event.target.files[0];
+                var reader = new FileReader();
+                reader.readAsBinaryString(file);
+
+                reader.onload = () => {
+                    this.matching_as_image.push("data:image/jpeg;base64," + btoa(reader.result));
+                    this.answers[index].answer = this.matching_as_image[0];
+                    this.matching_as_image = [];
+                };
+                reader.onerror = () => {
+                    console.log("there are some problems");
+                };
+            },
+
+            /*updateQuiz() {
+              this.removeNullParamsFromQuiz();
+              this.$store.dispatch("enableLoading");
+              axios
+                  .put(this.routes.quiz.UPDATE_QUIZ, this.quiz)
+                  .then(response => {
+                      this.$store.dispatch("disableLoading");
+                      this.added_success = true;
+                      this.added_error = false;
+                      setTimeout(() => {
+                          this.added_success = false;
+                      }, 1500);
+                      this.GUI.SHOW_QUIZ_CONTENT = false;
+                  })
+                  .catch(err => {
+                      this.added_error_messages = err.response.data;
+                      this.added_error = true;
+                      this.added_success = false;
+                      this.$store.dispatch("disableLoading");
+                  });
+          },
+          removeNullParamsFromQuiz() {
+              for (var propName in this.quiz) {
+                  if (this.quiz[propName] === null || this.quiz[propName] === undefined) {
+                      delete this.quiz[propName];
+                  }
+              }
+          },*/
+
+            createQuestion(idquest) {
+                this.ques_data.id = idquest;
+                this.ques_data.description = JSON.stringify(this.quill_edit_description.getContents().ops)
+                this.$store.dispatch("enableLoading");
+                if (
+                    this.ques_data.type == "fill_in_blank" ||
+                    this.ques_data.type == "dropdown" ||
+                    this.ques_data.type == "drag_drop"
+                ) {
+                    //--------------------Insert answer to database, then replace real answer to answer-id in Question------//
+                    var fill_in_blank_content = this.fill_in_blank_question.getContents().ops;
+                    let answers_arr = []
+                    const new_content = fill_in_blank_content.map(async item => {
+                        if ("attributes" in item && "strike" in item.attributes) {
+                            if (this.ques_data.type == "dropdown") {
+                                var is_correct = item.insert.includes("*");
+                                var answer_data = {
+                                    question_id: idquest,
+                                    title: item.insert,
+                                    is_correct: is_correct
+                                };
+                                var title = item.insert.replace("*", "");
+                                var lengthOfAnswer = title.length;
+                            } else {
+                                var answer_data = {
+                                    question_id: idquest,
+                                    title: item.insert,
+                                    is_correct: true
+                                };
+                                var qq = item.insert.split('|');
+                                if (qq.length > 1) {
+                                    var ll = 0;
+                                    $.each(qq, function (i, vq) {
+                                        if (vq.length > ll) {
+                                            ll = vq.length;
+                                        }
+                                    });
+                                    var lengthOfAnswer = ll;
+                                } else {
+                                    var lengthOfAnswer = item.insert.length;
+                                }
+                            }
+
+                            const res = await axios.post(
+                                this.routes.answer.CREATE,
+                                answer_data
+                            );
+                            item.insert = "answer-" + res.data.id + "-" + lengthOfAnswer;
+                            answers_arr.push(res.data.id);
+                            return item;
+                        } else {
+                            return item;
+                        }
+                    });
+
+                    Promise.all(new_content).then(res => {
+
+                        //Delete old answers:
+                        /* axios
+                             .delete(this.routes.answer.DELETE_MULTIPLE_EXCEPT, {
+                                 data: {
+                                     answers_id: answers_arr,
+                                     question_id: this.ques_data.id,
+                                 }
+                             })
+                             .then(response => {
+                                 console.log("success")
+                             });*/
+
+                        this.ques_data.description = JSON.stringify(res);
+                        if (this.ques_data.audio != null && typeof this.ques_data.audio == "object") {
+
+                            this.updateQuestionWithAudio();
+                        } else {
+                            this.submitUpdateQuestion();
+                        }
+                    });
+                } else if (this.ques_data.type == "matching" || this.ques_data.type == "matching_as_image" || this.ques_data.type == "matching_text_image") {
+
+                    this.submitUpdateMultipleQuestion();
+                } else {
+                    if (this.ques_data.audio != null && typeof this.ques_data.audio == "object") {
+
+                        this.updateQuestionWithAudio();
+                    } else {
+                        this.submitUpdateQuestion();
+                    }
+                }
+            },
+            submitUpdateQuestion() {
+                if (this.ques_data.type == 'single_set') {
+                    this.ques_data.parent_id = this.single_set_parent;
+                    console.log(this.ques_data);
+                }
+                axios
+                    .post(this.routes.question.CREATE_NEW, this.ques_data)
+                    .then(response => {
+                        if (
+                            this.ques_data.type != "fill_in_blank" &&
+                            this.ques_data.type != "drag_drop"
+                        ) {
+                            if (this.answers.length === 0 && this.boolean_answers.length === 0) {
+                                this.resetModal();
+                            }
+                            if (this.answers_in_delete_queue.length > 0) {
+                                this.deleteAnswers();
+                            }
+                            this.addAnswer(this.answers);
+                            this.resetModal();
+                        } else {
+                            this.resetModal();
+                        }
+                        this.fetchQuestion(this.$route.params.id);
+                        this.$store.dispatch("disableLoading");
+                    })
+                    .catch(err => {
+                        this.$store.dispatch("disableLoading");
+                        this.added_error_messages = err.response;
+                        this.added_error = true;
+                        this.added_success = false;
+                    });
+            },
+
+            onAudioInputChanged(event) {
+                this.ques_data.audio = event.target.files[0];
+                document.getElementById('question_audio').value = null;
+            },
+
+            addAnswer(answers) {
+                let count = 0;
+                this.boolean_answers.forEach(val => {
+                    this.boolean_answers[count].question_id = this.ques_data.id;
+                    count++;
+                });
+                this.answers.forEach(val => {
+                    this.answers[count].question_id = this.ques_data.id;
+                    count++;
+                });
+                var answersWithNullID = this.answers.filter(a => {
+                    return a.id === undefined;
+                });
+                var answersTobeUpdated = this.answers.filter(a => {
+                    return a.id !== undefined;
+                });
+
+                var booleanAnswersWithNullID = this.boolean_answers.filter(a => {
+                    return a.id === undefined;
+                });
+
+                var booleanAnswersTobeUpdated = this.boolean_answers.filter(a => {
+                    return a.id !== undefined;
+                });
+                switch (this.ques_data.type) {
+                    case "yes_no":
+                    case "true_false":
+                        if (this.boolean_answers.length > 0) {
+                            axios
+                                .post(this.routes.answer.CREATE_MULTIPLE_ANSWER, {
+                                    answers: booleanAnswersWithNullID
+                                })
+                                .then(res => {
+                                    this.resetModal();
+                                })
+                                .catch(err => {
+                                });
+                        }
+                        break;
+                    case "sorting_horizontal":
+                    case "summary":
+                    case "single_choice":
+                    case "math_set":
+                    case "single_set":
+                    case "multiple_choice":
+                        if (answersWithNullID.length > 0) {
+                            axios
+                                .post(this.routes.answer.CREATE_MULTIPLE_ANSWER, {
+                                    answers: answersWithNullID
+                                })
+                                .then(res => {
+                                    this.resetModal();
+                                })
+                                .catch(err => {
+                                });
+                        }
+                        break;
+                    case "single_choice_as_image":
+                        if (answersWithNullID.length > 0) {
+                            var image = this.single_choice_as_image;
+                            $.each(answers, function (key, value) {
+                                value.single_choice_as_image = image[key];
+                            });
+                            axios
+                                .post(this.routes.answer.CREATE_MULTIPLE_ANSWER_FOR_IMAGE, {
+                                    answers: answers
+                                })
+                                .then(res => {
+                                    this.resetModal();
+                                })
+                                .catch(err => {
+                                });
+
+
+                        }
+                        break;
+                }
+
+                if (answersTobeUpdated.length > 0) {
+                    this.updateMultipleAnswers(answersTobeUpdated);
+                }
+                if (booleanAnswersTobeUpdated.length > 0) {
+                    this.updateMultipleAnswers(booleanAnswersTobeUpdated);
+                }
+            },
+
+
+            fetchQuestion(idquiz) {
+                this.questions = [];
+                this.$store.dispatch("enableLoading");
+                axios
+                    .get(this.routes.question.GET_QUEST_OF_QUIZ + "/" + idquiz)
+                    .then(response => {
+                        this.questions = response.data;
+                        this.$store.dispatch("disableLoading");
+                    });
+            },
+
+            updateQuestionWithAudio() {
+                let form_data = new FormData();
+                form_data.append("id", this.ques_data.id);
+                form_data.append("title", this.ques_data.title);
+                form_data.append("formula", this.ques_data.formula);
+                form_data.append("description", this.ques_data.description);
+                form_data.append("audio", this.ques_data.audio);
+                form_data.append("type", this.ques_data.type);
+                form_data.append("score", this.ques_data.score);
+                form_data.append("quiz_id", this.ques_data.quiz_id);
+                axios
+                    .post(this.routes.question.UPDATE_WITH_AUDIO_FILE, form_data, {
+                        headers: {
+                            "Content-Type": "multipart/form-data"
+                        }
+                    })
+                    .then(res => {
+                        this.$store.dispatch("disableLoading");
+                        if (
+                            this.ques_data.type != "fill_in_blank" &&
+                            this.ques_data.type != "drag_drop"
+                        ) {
+                            if (
+                                this.answers.length === 0 &&
+                                this.boolean_answers.length === 0
+                            ) {
+                                this.resetModal();
+                            }
+                            if (this.answers_in_delete_queue.length > 0) {
+                                this.deleteAnswers();
+                            }
+                            this.addAnswer(this.answers);
+                            this.resetModal();
+                        } else {
+                            this.resetModal();
+                        }
+                        this.fetchQuestion(this.$route.params.id);
+                    })
+                    .catch(err => {
+                        this.$store.dispatch("disableLoading");
+                        this.added_error_messages = err.response.data;
+                        this.added_error = true;
+                        this.added_success = false;
+                    });
+            },
+            submitUpdateMultipleQuestion() {
+                console.log('test10');
+                var question_data = {
+                    parent_question: this.ques_data,
+                    child_questions: this.answers
+                };
+                axios
+                    .put(this.routes.question.UPDATE_MULTIPLE_QUESTION, question_data)
+                    .then(res => {
+                        this.$store.dispatch("disableLoading");
+                        this.fetchQuestion(this.$route.params.id);
+                        this.resetModal();
+                    })
+                    .catch(err => {
+                        this.$store.dispatch("disableLoading");
+                    });
+            },
+
+            /*addQuestion() {
+              this.ques_data.description = JSON.stringify(this.quill_description.getContents().ops)
+              //this.$store.dispatch("enableLoading");
+              if (this.ques_data.type == "matching") {
+                  this.addMultipleQuestion();
+              } else if (this.ques_data.audio) {
+                  this.handleUploadAudioQuestionType();
+              } else {
+                  if (this.checkIfHasCorrectAnswer()) {
+                  console.log('addQuestion');
+                  console.log(this.ques_data);
+                  console.log(this.answers);
+                      axios
+                          .post(this.routes.question.CREATE, this.ques_data)
+                          .then(res => {
+                              this.addAnwersWhenQuestionAdded(res);
+                              this.fetchQuestion(this.$route.params.id);
+                              this.$store.dispatch("disableLoading");
+                          })
+                          .catch(err => {
+                              this.added_error_messages = err.response.data;
+                              this.added_error = true;
+                              this.added_success = false;
+                              this.$store.dispatch("disableLoading");
+                          });
+                  } else {
+                      this.added_error = true;
+                      this.$store.dispatch("disableLoading");
+                      this.added_error_messages = {
+                          errors: {
+                              correct_answer: ["Please choose at least 1 correct answer"]
+                          }
+                      };
+                  }
+              }
+          },*/
+            checkIfHasCorrectAnswer() {
+                if (this.ques_data.type == "single_choice" || this.ques_data.type == "multiple_choice" || this.ques_data.type == "single_set" || this.ques_data.type == "math_set") {
+                    var is_correct = false;
+                    this.answers.forEach(a => {
+                        if (a.is_correct == 1) is_correct = true;
+                    });
+                    return is_correct;
+                } else if (this.ques_data.type == "true_false" || this.ques_data.type == "yes_no") {
+                    var is_correct = false;
+                    this.boolean_answers.forEach(a => {
+                        if (a.is_correct == 1) is_correct = true;
+                    });
+                    return is_correct;
+                }
+                return true;
+            },
+            addMultipleQuestion() {
+                var question_data = {
+                    parent_question: this.ques_data,
+                    child_questions: this.answers
+                };
+                axios
+                    .post(this.routes.question.CREATE_MULTIPLE_QUESTION, question_data)
+                    .then(res => {
+                        this.resetModal();
+                        this.fetchQuestion(this.$route.params.id);
+                        this.$store.dispatch("disableLoading");
+                    })
+                    .catch(err => {
+                        console.log(err.response);
+                    });
+            },
+            handleUploadAudioQuestionType() {
+                let form_data = new FormData();
+                form_data.append("title", this.ques_data.title);
+                form_data.append("formula", this.ques_data.formula);
+                form_data.append("description", this.ques_data.description);
+                form_data.append("audio", this.ques_data.audio);
+                form_data.append("type", this.ques_data.type);
+                form_data.append("score", this.ques_data.score);
+                form_data.append("quiz_id", this.ques_data.quiz_id);
+                if (this.ques_data.type == 'single_set') {
+                    form_data.append("parent_id", this.single_set_parent);
+                }
+                axios
+                    .post(this.routes.question.CREATE, form_data, {
+                        headers: {
+                            "Content-Type": "multipart/form-data"
+                        }
+                    })
+                    .then(res => {
+                        this.addAnwersWhenQuestionAdded(res);
+                        this.fetchQuestion(this.$route.params.id);
+                        this.$store.dispatch("disableLoading");
+                    })
+                    .catch(err => {
+                        this.added_error_messages = err.response.data;
+                        this.added_error = true;
+                        this.added_success = false;
+                        this.$store.dispatch("disableLoading");
+                    });
+            },
+
+            onImageInputChanged(event) {
+                var file = event.target.files[0];
+                var reader = new FileReader();
+                reader.readAsBinaryString(file);
+
+                reader.onload = () => {
+                    this.quiz.quiz_image = "";
+                    this.quiz.image = "data:image/jpeg;base64," + btoa(reader.result);
+                    this.quiz.quiz_image = "data:image/jpeg;base64," + btoa(reader.result);
+                };
+                reader.onerror = () => {
+                    console.log("there are some problems");
+                };
+            },
+
+            onImageAdd(event) {
+                var file = event.target.files[0];
+                var reader = new FileReader();
+                reader.readAsBinaryString(file);
+
+                reader.onload = () => {
+                    this.ques_data.image = "";
+                    this.ques_data.image = "data:image/jpeg;base64," + btoa(reader.result);
+                };
+                reader.onerror = () => {
+                    console.log("there are some problems");
+                };
+            },
+
+
+            getCourses() {
+
+                axios.get(this.routes.course.GET_BY_INSTRUCTOR).then(response => {
+                    this.courses = response.data;
+                });
+            },
+
+            getQuizCreated() {
+
+                axios.get(this.routes.quiz.GET_CREATED).then(response => {
+                    this.quizzes = response.data;
+
+                });
+            },
+
+            onQuestionTypeChanged(e) {
+
+                switch (this.ques_data.type) {
+                    case "yes_no":
+                        this.boolean_answers = [];
+                        this.boolean_answers.push({
+                            title: "Yes",
+                            is_correct: false,
+                            question_id: null
+                        });
+                        this.boolean_answers.push({
+                            title: "No",
+                            is_correct: false,
+                            question_id: null
+                        });
+                        break;
+                    case "true_false":
+                        this.boolean_answers = [];
+                        this.boolean_answers.push({
+                            title: "True",
+                            is_correct: false,
+                            question_id: null
+                        });
+                        this.boolean_answers.push({
+                            title: "False",
+                            is_correct: false,
+                            question_id: null
+                        });
+                        break;
+                }
+                if (this.ques_data.type == 'single_set') {
+                    this.getSingleSetParent();
+                }
+            },
+
+            getSingleSetParent() {
+                console.log(this.ques_data);
+                axios
+                    .post(this.routes.question.GET_SINGLE_SET_PARENT, {quiz_id: this.$route.params.id})
+                    .then(res => {
+                        this.get_single_set_parent = res.data;
+                    });
+
+            },
+            onChangeSingleSet(e) {
+                if (e.target.options.selectedIndex > -1) {
+                    if (e.target.options[e.target.options.selectedIndex].value == '') {
+                        this.single_set_parent = null;
+                        console.log(this.single_set_parent);
+                    } else {
+                        this.single_set_parent = e.target.options[e.target.options.selectedIndex].value;
+                        console.log(this.single_set_parent);
+                    }
+                }
+
+            },
+
+
+            addInputAnswer() {
+                if (this.ques_data.type == "matching" || this.ques_data.type == "matching_as_image" || this.ques_data.type == "matching_text_image") {
+                    this.answers.push({
+                        question: "",
+                        answer: ""
+                    });
+                } else {
+                    this.answers.push({
+                        //for_question_index_input: this.for_question_index_input,
+                        //child_index: this.question_index,
+                        title: "",
+                        is_correct: false,
+                        answer_order: this.answers.length,
+                        question_id: this.ques_data.id,
+                        single_choice_as_image: ""
+                    });
+                }
+                //this.for_question_index_input = 0;
+            },
+
+            /*addInputQuestion(){
+              this.question_index = this.question_index +1;
+              this.for_question_index_input = 1;
+              if (this.ques_data.type == "single_set") {
+                    this.answers.push({
+                        for_question_index_input: this.for_question_index_input,
+                        child_index: this.question_index,
+                        title: "",
+                        is_correct: false,
+                        answer_order: this.answers.length,
+                        question_id: this.ques_data.id,
+                        single_choice_as_image: ""
+                    });
+                   this.for_question_index_input = 0;
+                }
+            },*/
+
+            getQuestionByID(idqes) {
+                $("#editQuiz_" + this.modal_index).modal();
+                this.GUI.SHOW_MODAL = true;
+                axios
+                    .get(this.routes.question.GET_BY_ID + "/" + idqes)
+                    .then(response => {
+                        this.ques_data.title = response.data.title;
+                        this.ques_data.formula = response.data.formula;
+                        this.ques_data.description = response.data.description
+                        this.ques_data.image = response.data.question_image;
+                        this.ques_data.audio = response.data.audio_file;
+                        this.ques_data.type = response.data.type;
+                        this.ques_data.score = response.data.score;
+                        this.ques_data.quiz_id = response.data.quiz_id;
+                        this.ques_data.parent_id = response.data.parent_id;
+                        this.ques_data.id = response.data.id;
+                        this.ques_data.video_link = response.data.video_link;
+                        this.quill_edit_description.setContents(JSON.parse(response.data.description));
+                        if (this.ques_data.audio != null) {
+                            this.GUI.SHOW_AUDIO_INPUT = true;
+                            //$('#audio_file_input').prop('checked', true);
+                            $("#audio_file_input_edit").prop("checked", true);
+                        }
+                        //--------Get and replace real answer from database---------//
+                        if (['fill_in_blank', 'drag_drop', 'dropdown'].includes(this.ques_data.type)) {
+                            let question_description = JSON.parse(response.data.description);
+
+                            const real_content = question_description.map(async item => {
+                                console.log(typeof item.insert)
+                                if (typeof item.insert == "string" && item.insert.indexOf("answer") != -1) {
+                                    var index_of_length = item.insert.indexOf("-", 7);
+                                    var answer_id = item.insert.substring(7, index_of_length);
+                                    var answer_response = await axios.get(
+                                        this.routes.answer.GET_BY_ID + answer_id
+                                    );
+                                    item.insert = answer_response.data.title;
+                                    return item;
+                                } else {
+                                    return item;
+                                }
+                            });
+                            Promise.all(real_content).then(res => {
+                                this.fill_in_blank_question.setContents(question_description);
+                            });
+                        }
+                        if (this.ques_data.type == "matching" || this.ques_data.type == "matching_as_image" || this.ques_data.type == "matching_text_image") {
+                            this.getChildQuestions(this.ques_data.id);
+                        } else {
+                            this.getAnswerByQuestionID(response.data.id, response.data.type);
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err.response.data);
+                    });
+            },
+            getChildQuestions(parent_id) {
+                axios
+                    .get(this.routes.question.GET_CHILD_QUESTIONS + parent_id)
+                    .then(res => {
+                        this.answers = res.data;
+                    })
+                    .catch(err => {
+                        console.log(err.response);
+                    });
+            },
+            getAnswerByQuestionID(idquest, question_type = null) {
+                axios
+                    .get(this.routes.answer.GET_BY_QUEST_ID + "/" + idquest)
+                    .then(response => {
+                        if (
+                            question_type == "single_choice" ||
+                            question_type == "math_set" ||
+                            question_type == "multiple_choice" ||
+                            question_type == "sorting_horizontal" ||
+                            question_type == "single_set" ||
+                            question_type == "summary"
+                        ) {
+                            response.data.forEach(arr => {
+                                this.question_index = arr.child_index;
+                            });
+                            this.answers = response.data;
+                        }
+                        if (question_type == "yes_no" || question_type == "true_false") {
+                            this.boolean_answers = response.data;
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err.response.data);
+                    });
+            },
+
+            // getLessons() {
+            //   axios
+            //     .get(this.routes.lesson.GET_ALL_BY_COURSE, {
+            //       params: {
+            //         course_id: this.quiz.course_id
+            //       }
+            //     })
+            //     .then(response => {
+            //       this.lessons = response.data;
+            //     });
+            // },
+
+            initQuillEditor() {
+                var toolbarOptions = [
+                    ["bold", "italic", "underline", "strike"],
+
+                    [{
+                        list: "ordered"
+                    }, {
+                        list: "bullet"
+                    }],
+                    [{
+                        size: ["small", false, "large", "huge"]
+                    }], // custom dropdown
+                    [{
+                        color: []
+                    }], // dropdown with defaults from theme
+                    [{
+                        align: []
+                    }],
+                    ["clean"] // remove formatting button
+                ];
+                this.fill_in_blank_question = new Quill("#quill_" + this.modal_index, {
+                    theme: "snow",
+                    modules: {
+                        toolbar: toolbarOptions
+                    }
+                });
+                /*this.quill_description = new Quill("#quillAddQuestion", {
+                    theme: "snow",
+                    modules: {
+                        toolbar: toolbarOptions
+                    }
+                });*/
+
+                this.quill_edit_description = new Quill("#quillEditQuestion_" + this.modal_index, {
+                    theme: "snow",
+                    modules: {
+                        toolbar: toolbarOptions
+                    }
+                });
+
+            },
+            markAnswersAsCorrect(answer, is_boolean = false) {
+                if (is_boolean) {
+                    this.boolean_answers.forEach(a => {
+                        a.is_correct = false;
+                    });
+                    answer.is_correct = true;
+                } else {
+                    this.answers.forEach(a => {
+                        a.is_correct = false;
+                    });
+                    answer.is_correct = true;
+                }
+            },
+            removeAnswer(index, question_type) {
+                if (
+                    question_type == "single_choice" ||
+                    question_type == "math_set" ||
+                    question_type == "multiple_choice" ||
+                    question_type == "sorting_horizontal" ||
+                    question_type == "single_set" ||
+                    question_type == "summary"
+                ) {
+                    if (this.answers[index].id != null) {
+                        this.answers_in_delete_queue.push(this.answers[index].id);
+                    }
+                    this.answers.splice(index, 1);
+                } else if (question_type == "yes_no" || question_type == "true_false") {
+                    if (this.boolean_answers[index].id != null) {
+                        this.answers_in_delete_queue.push(this.boolean_answers[index].id);
+                    }
+                    this.boolean_answers.splice(index, 1);
+                }
+            },
+            onToggle(element) {
+                this.is_correct = !this.is_correct;
+                return this.is_correct;
+            },
+
+            deleteQuestion(index) {
+                var confirmed = confirm("Are you sure you want to delete this question?");
+                if (confirmed) {
+                    this.$store.dispatch("enableLoading");
+                    axios
+                        .get(this.routes.question.DELETE_NEW + index)
+                        .then(res => {
+                            this.fetchQuestion(this.$route.params.id);
+                            this.$store.dispatch("disableLoading");
+                        })
+                        .catch(err => {
+                            this.$store.dispatch("disableLoading");
+                            console.log(err.response);
+                        });
+                }
+            },
+
+            resetModal() {
+                console.log('T2');
+                this.ques_data.title = "";
+                this.ques_data.formula = "";
+                this.ques_data.description = ""
+                this.ques_data.image = "";
+                this.ques_data.audio = null;
+                this.ques_data.type = "single_choice";
+                this.ques_data.score = 3;
+                //this.ques_data.id = null;
+                this.ques_data.parent_id = "";
+                this.added_success = false;
+                this.added_error = false;
+                this.answers = [];
+                this.single_choice_as_image = [];
+                this.boolean_answers = [];
+                this.ques_data.video_link = null;
+                this.question_index = 1;
+                this.for_question_index_input = 1;
+                this.single_set_parent = null;
+                this.fill_in_blank_question.setContents([{
+                    insert: "\n"
+                }]);
+                /*this.quill_description.setContents([{
+                    insert: "\n"
+                }]);*/
+                this.quill_edit_description.setContents([{
+                    insert: "\n"
+                }]);
+                this.GUI.SHOW_AUDIO_INPUT = false;
+                this.GUI.SHOW_VIDEO_LINK_INPUT = false;
+                $("#audio_file_input").prop("checked", false);
+                $("#audio_file_input_edit").prop("checked", false);
+                $("#video_link_input").prop("checked", false);
+                $("#video_link_input_edit").prop("checked", false);
+                //$("#addQuestion").modal("hide");
+                $("#editQuiz_" + this.modal_index).modal("hide");
+                this.modal_index++;
+                var modal_id = "editQuiz_" + this.modal_index;
+                this.$session.set("editQuiz", modal_id);
+            },
+
+            nestable(reorderArr) {
+                this.$store.dispatch("enableLoading");
+                console.log(reorderArr);
+                axios
+                    .put(this.routes.question.REORDER, {
+                        order: reorderArr
+                    })
+                    .then(res => {
+                        //this.fetchQuestion();
+                        this.$store.dispatch("disableLoading");
+                    })
+                    .catch(err => {
+                        this.$store.dispatch("disableLoading");
+                        console.log(err);
+                    });
+            },
+
+
+            init(quiz_id) {
+                console.log('T1');
+                var self = this;
+                //----This line bellow is one of the best thing I've ever created ! Ever ! :)) -----//
+                //Append the modal element to another div outside of this file (located in App.vue) :
+
+                $("#editQuiz_" + this.modal_index).appendTo("#modelDestination");
+
+                if (this.$session.get("editQuiz")) {
+                    if (this.$session.get("editQuiz") != "editQuiz_" + this.modal_index) {
+                        var check_modal = this.$session.get("editQuiz");
+                        console.log(check_modal);
+                        console.log(this.$session.get("editQuiz"));
+                        $("#" + check_modal).remove();
+                    }
+                }
+
+                $("#editQuiz_" + this.modal_index).on("hidden.bs.modal", function (e) {
+                    self.GUI.SHOW_MODAL = false;
+                    self.resetModal();
+                    $("#editQuiz_" + this.modal_index).remove();
+                });
+                /*$("#addQuestion").on("show.bs.modal", function(e) {
+                    self.GUI.SHOW_MODAL = true;
+                    self.resetModal();
+                });*/
+                /*$("#addQuestion").on("hidden.bs.modal", function(e) {
+                    self.GUI.SHOW_MODAL = false;
+                    self.added_success = false;
+                    self.added_error = false;
+                    self.resetModal();
+                });*/
+                //--------Initialize the nested-----------//
+                //this.$forceUpdate();
+                $(".nestable").nestable({
+                    rootClass: "nestable",
+                    listNodeName: "ul",
+                    listClass: "nestable-list",
+                    itemClass: "nestable-item",
+                    dragClass: "nestable-drag",
+                    handleClass: "nestable-handle",
+                    collapsedClass: "nestable-collapsed",
+                    placeClass: "nestable-placeholder",
+                    emptyClass: "nestable-empty",
+                    maxDepth: 2
+                });
+                //Update order when change
+                $(".nestable").on("change", function () {
+                    let reorderArr = $(".nestable").nestable("serialize");
+                    self.orderTimes++;
+                    //if(self.orderTimes % 2 == 0) {
+                    self.nestable(reorderArr);
+                    //}
+                });
+            }
+        },
+
+        computed: {
+            authUser: function () {
+                return this.$store.getters.authUser
+            }
+        },
+    };
+</script>
+
+<style lang="scss">
+    // [dir="ltr"] .modal.show .modal-dialog {
+    //   margin-top: 5% !important;
+    // }
+    // [dir="ltr"] .modal-body {
+    //   max-height: 450px;
+    //   overflow-y: scroll;
+    // }
+    @media (min-width: 576px) {
+        [dir="ltr"] .modal-dialog {
+            max-width: 800px;
+        }
+    }
+
+    #answerTable tr {
+        margin: 5px 0;
+    }
+
+    .fit-height {
+        max-height: 100vh;
+        overflow: hidden;
+    }
+
+    #collapse-toggle-container {
+        display: block;
+        text-align: center;
+        margin: 10px 0;
+    }
+
+    #collapse-button {
+        background: transparent;
+        color: #2196f3;
+        border: 1px solid #2196f3;
+        padding: 5px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    #collapse-button:hover {
+        background: #2196f3;
+        color: #fff;
+        border: 1px solid #fff;
+    }
+
+    .list-group-item.nestable-item {
+        button {
+            display: none;
+        }
+    }
+
+</style>

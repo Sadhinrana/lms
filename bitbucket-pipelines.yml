@@ -1,0 +1,17 @@
+# This is a sample build configuration for JavaScript.
+# Check our guides at https://confluence.atlassian.com/x/14UWN for more examples.
+# Only use spaces to indent your .yml configuration.
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+image: atlassian/default-image:latest
+
+pipelines:
+  branches:
+    master:
+      - step:
+          caches:
+            - node
+          script: # Modify the commands below to build your repository.
+            - apt-get install sshpass
+            - cat ./pull.sh | sshpass -p "$SERVER_PASSWORD" ssh -o StrictHostKeyChecking=no $SERVER_NAME
+            - echo "PIPELINE FINISHED !!!"
