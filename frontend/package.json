@@ -12,7 +12,7 @@
     "@fullcalendar/daygrid": "^4.4.0",
     "@fullcalendar/interaction": "^4.4.0",
     "@shopify/draggable": "https://github.com/dshongphuc/draggable2/tarball/master",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "katex": "^0.10.2",
     "lodash": "^4.17.11",
     "mathquill": "^0.10.1-a",
