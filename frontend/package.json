@@ -14,7 +14,7 @@
     "@shopify/draggable": "https://github.com/dshongphuc/draggable2/tarball/master",
     "axios": "^0.18.0",
     "katex": "^0.10.2",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.21",
     "mathquill": "^0.10.1-a",
     "moment": "^2.24.0",
     "query-string": "^6.5.0",
