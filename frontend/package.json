@@ -16,7 +16,7 @@
     "katex": "^0.10.2",
     "lodash": "^4.17.11",
     "mathquill": "^0.10.1-a",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "query-string": "^6.5.0",
     "quill-delta-to-html": "^0.10.8",
     "v-debounce": "^0.1.2",
